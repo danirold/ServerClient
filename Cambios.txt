@@ -1,0 +1,32 @@
+1. En el paquete Servidor, hemos implementado una interfaz de Lectores y Escritores, de la que extienden 
+SemaforoLectoresEscritores y MonitorLectoresyEscritores. En las tablas, donde utilizamos el semáforo y el monitor,
+ahora los declaramos como interfaz.
+
+2. En el paquete Servidor, creamos una interfaz para las tablas, llamada Tabla, de la que extienden TablaEntrada y
+TablaSalida. En OyenteCliente pasamos a declarar estas tabla como interfaz.
+
+3. Creamos la clase SocketImp para gestionar la concurrencia de las acciones de lectura y escritura del socket. 
+Esta clase tiene un Socket, sus correspondientes ObjectInputStream y ObjectOutputStream y un LockTicket. Tenemos
+dos constructores, uno que recibe el IP y el puerto del socket, y otro que recibe un serverSocket para 
+posteriormente hacer socket.accept(). Sus métodos son write y read, ambos protegidos con el lock. También
+tiene dos métodos que devuelven el ObjectInputStream y el ObjectOutputStream.
+En relación al LockTicket, hemos evitado el uso del array turno, para así no tener que enviar un ID cada vez que
+queramos utilizarlo. Simplemente utilizamos turno como una variable local en takeLock.
+
+4. En cuanto a la utilización de los Locks, ya le damos uso a los tres. Por un lado, como acabo de mencionar,
+utilizamos el LockTicket para proteger las acciones de lectura y escritura del socket en SocketImp, 
+utilizamos el LockRompeEmpate para proteger la escritura por pantalla (System.out) entre Cliente y OyenteServidor y
+utilizamos el LockBakery para proteger la escritura por pantalla (System.out) entre Servidor y OyenteCliente.
+En estos dos últimos casos, tenemos solo dos procesos implicados, luego, el lock toma el ID 1 para el proceso de 
+Cliente/Servidor y el ID 2 para el proceso de OyenteServior/OyenteCliente.
+Hemos añadido en la clase Servidor un System.out para mostrar el numero de usuarios conectados cada vez que
+se conecta un nuevo cliente.
+
+5. Finalmente, en vez de generar los puertos para el Emisor y el Receptor de manera aleatorio, hemos decidido
+gestionar estos puertos mediante un monitor ProductorConsumidor. El "almacén" serían los puertos que pueden utilizarse,
+consumir es equivalente a asignar un puerto y producir es equivalente a poner que un puerto vuelve a estar disponible
+tras terminar su uso (justo tras terminar el start del Emisor/Receptor). El monitor es la clase 
+ProductorConsumidorPuertos, y en ella, se inicializa el almacén a posiciones de puertos desde 3000 a 3100. Destacar
+que al prinicpio el almacén está lleno, luego, debemos poner count = 100.
+Este uso de productor consumidor se realiza en la clase OyenteServidor. 
+
